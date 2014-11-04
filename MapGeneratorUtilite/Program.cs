@@ -13,12 +13,15 @@ namespace MapGeneratorUtilite
     {
         static string[] textures = new[]
             {
-                "\"City.png\"", "\"coal.jpg\"","\"gas.jpg\"" , "\"rocks.jpg\"", "\"trees.jpg\"", "\"field.jpg\"","\"grass.jpg\"" 
+                "\"City.png\"","\"trees.jpg\"", "\"coal.jpg\"","\"gas.jpg\"" ,"\"wheat.jpg\"", "\"rocks.jpg\"", "\"grass.jpg\"" 
             };
+
+        enum Textures {
+           City, Tree, Coal, Gas, Wheat, Rock, Grass };
 
         static int fieldSizeX = 30, fieldSizeY = 15;
         static int cities = 10, tree = 70, coal = 40, gas = 30, wheat = 100, rock = 60, grass = 140;
-        static List<Cell> cells;
+        static List<List<Cell>> cells;
 
 
         static void Main(string[] args)
@@ -44,27 +47,18 @@ namespace MapGeneratorUtilite
                     GetCount(out gas, "gas");
                     GetCount(out wheat, "wheats");
                     GetCount(out rock, "rocks");
-                    GetCount(out grass, "grass");
 
                     int fieldCount = fieldSizeX * fieldSizeY;
-                    int summ = (cities + tree + coal + gas + wheat + rock + grass);
-                    if (fieldCount < summ)
+                    int summ = (cities + tree + coal + gas + wheat + rock);
+                    if (fieldCount <= summ)
                     {
-                        Console.WriteLine("You want too much objects. There is no space to place it");
+                        Console.WriteLine("You want too much objects. There is no space for grass");
                         Console.WriteLine("Map generation will start again");
                     }
                     else
                     {
-                        if (fieldCount > summ)
-                        {
-                            Console.WriteLine("There was not enoug field. I will add some grass for you.");
-                            grass += (fieldCount - summ);
-                            break;
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        grass = fieldCount - summ;
+                        break;
                     }
 
                 } while (true);
@@ -89,7 +83,7 @@ namespace MapGeneratorUtilite
 
             Console.WriteLine("Good. Let's start generate a map");
 
-            GenerateMap(fieldSizeX * fieldSizeY);
+            GenerateMap();
 
             Console.WriteLine("Now saving file...");
 
@@ -111,63 +105,124 @@ namespace MapGeneratorUtilite
                 {
                     sw.WriteLine("var map = [");
 
-                    string[] strings = new string[cells.Count];
+                    List<List<string>> strings = new List<List<string>>();
 
                     for (int i = 0; i < cells.Count; i++)
                     {
-                        StringBuilder sb = new StringBuilder();
-                        sb.Append("{\n\t\"type\": " + cells[i].type + ",");
-                        sb.Append("\n\t\"texture\": " + cells[i].Texture + ",");
-                        sb.Append("\n\t\"res_cnt\": " + cells[i].res_cnt + ",");
-                        sb.Append("\n\t\"city\": " + cells[i].city +"\n}");
-                        strings[i] = sb.ToString();
-
+                        strings.Add(new List<string>());
+                        for (int j = 0; j < cells[i].Count; j++)
+                        {
+                            StringBuilder sb = new StringBuilder();
+                            sb.Append("{\n\t\"type\": " + cells[i][j].type + ",");
+                            sb.Append("\n\t\"texture\": " + cells[i][j].Texture + ",");
+                            sb.Append("\n\t\"res_cnt\": " + cells[i][j].res_cnt + ",");
+                            sb.Append("\n\t\"city\": " + cells[i][j].city + "\n}");
+                            strings[i].Add(sb.ToString());
+                        }
                     }
 
-                    string s = string.Join(",\n", strings);
-                    sw.WriteLine(s);
+                    StringBuilder sb2 = new StringBuilder();
+                    foreach (List<string> s in strings)
+                    {
+                        sb2.Append(string.Join(",\n", s));
+                    }
+
+                    sw.WriteLine(sb2.ToString());
 
                     sw.WriteLine("]");
                 }
             }
         }
 
-        private static void GenerateMap(int fieldsCount)
+        private static void GenerateMap()
         {
-            cells = new List<Cell>(fieldsCount);
-            for (int i = 0; i < fieldsCount; i++)
+            cells = new List<List<Cell>>();
+            for (int i = 0; i < fieldSizeX; i++)
             {
-                cells.Add(new Cell());
+                cells.Add(new List<Cell>());
+                for (int j = 0; j < fieldSizeY; j++)
+                {
+                    cells[i].Add(new Cell());
+                }
             }
 
             Random r = new Random();
 
-            GenerateTexture(fieldsCount, cities, cells, r, 0);
+            GenerateTexture(cities,  r, Textures.City);
             Console.WriteLine("Cities generated...");
-            GenerateTexture(fieldsCount, tree, cells, r,1);
+            GenerateTexture( tree, r,1);
             Console.WriteLine("Trees generated...");
-            GenerateTexture(fieldsCount, coal, cells, r,2);
+            GenerateTexture( coal,  r,Textures.Coal);
             Console.WriteLine("Coal generated...");
-            GenerateTexture(fieldsCount, gas, cells, r,3);
+            GenerateTexture( gas,  r, Textures.Gas);
             Console.WriteLine("Gas generated...");
-            GenerateTexture(fieldsCount, wheat, cells, r,4);
+            GenerateTexture(wheat,  r,Textures.Wheat);
             Console.WriteLine("Wheat generated...");
-            GenerateTexture(fieldsCount, rock, cells, r,5);
+            GenerateTexture( rock,  r,5);
             Console.WriteLine("Rocks generated...");
-            GenerateTexture(fieldsCount, grass, cells, r,6);
+            GenerateTexture( grass, r,6);
             Console.WriteLine("Grass generated...");
         }
 
-        private static void GenerateTexture(int fieldsCount, int count, List<Cell> cells, Random r, int index)
+        private static void GenerateTexture(int count, Random r, int index)
         {
             for (int i = 0; i < count; i++)
             {
-                int k;
+                int k, l;
                 do
                 {
-                    k = r.Next(0, fieldsCount);
-                } while (cells[k].Texture != string.Empty);
-                cells[k].Texture = textures[index];
+                    k = r.Next(0, fieldSizeX);
+                    l = r.Next(0, fieldSizeY);
+                } while (cells[k][l].Texture != string.Empty);
+                cells[k][l].Texture = textures[index];
+            }
+            Thread.Sleep(count);
+        }
+
+
+        private static void GenerateTexture(int count, Random r, Textures type)
+        {
+            int fieldsCount = fieldSizeX * fieldSizeY;
+            for (int i = 0; i < count; i++)
+            {
+                int k,l;
+
+                int ind = (int)type;
+
+                do
+                {
+                    k = r.Next(0, fieldSizeX);
+                    l = r.Next(0, fieldSizeY);
+                    if (cells[k][l].Texture != string.Empty)
+                        continue;
+
+                    if (k > 0 && k < fieldSizeX - 1)
+                    {
+                        if (cells[k - 1][l].Texture == textures[ind])
+                            continue;
+                        if (cells[k + 1][l].Texture == textures[ind])
+                            continue;
+                    }
+                    if(l > 0 && l < fieldSizeY - 1)
+                    {
+                        if (cells[k][l-1].Texture == textures[ind])
+                            continue;
+                        if (cells[k][l + 1].Texture == textures[ind])
+                            continue;
+
+                    }
+                    if (k>0 && l >0 && l<fieldSizeY-1)
+                    {
+                        if (cells[k-1][l - 1].Texture == textures[ind])
+                            continue;
+                        if (cells[k-1][l + 1].Texture == textures[ind])
+                            continue;
+
+                    }
+
+                    break;
+                } while (true);
+                cells[k][l].Texture = textures[ind];
             }
             Thread.Sleep(count);
         }
