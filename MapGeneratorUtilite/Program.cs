@@ -13,7 +13,7 @@ namespace MapGeneratorUtilite
     {
         static string[] textures = new[]
             {
-                "\"City.png\"", "\"coal.jpg\"", "\"grass.jpg\"", "\"rocks.jpg\"", "\"trees.jpg\"", "\"field.jpg\"", "\"gas.jpg\""
+                "\"City.png\"", "\"coal.jpg\"","\"gas.jpg\"" , "\"rocks.jpg\"", "\"trees.jpg\"", "\"field.jpg\"","\"grass.jpg\"" 
             };
 
         static int fieldSizeX = 30, fieldSizeY = 15;
