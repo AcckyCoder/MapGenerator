@@ -107,10 +107,10 @@ namespace MapGeneratorUtilite
 
                     List<List<string>> strings = new List<List<string>>();
 
-                    for (int i = 0; i < cells.Count; i++)
+                    for (int i = 0; i < fieldSizeX; i++)
                     {
                         strings.Add(new List<string>());
-                        for (int j = 0; j < cells[i].Count; j++)
+                        for (int j = 0; j < fieldSizeY; j++)
                         {
                             StringBuilder sb = new StringBuilder();
                             sb.Append("{\n\t\"type\": " + cells[i][j].type + ",");
@@ -119,6 +119,7 @@ namespace MapGeneratorUtilite
                             sb.Append("\n\t\"city\": " + cells[i][j].city + "\n}");
                             strings[i].Add(sb.ToString());
                         }
+                        strings[i][fieldSizeY-1] = strings[i].Last() + ",\n";
                     }
 
                     StringBuilder sb2 = new StringBuilder();
