@@ -119,7 +119,8 @@ namespace MapGeneratorUtilite
                             sb.Append("\n\t\"city\": " + cells[i][j].city + "\n}");
                             strings[i].Add(sb.ToString());
                         }
-                        strings[i][fieldSizeY-1] = strings[i].Last() + ",\n";
+                        if(i!= fieldSizeX-1)
+                            strings[i][fieldSizeY-1] = strings[i].Last() + ",\n";
                     }
 
                     StringBuilder sb2 = new StringBuilder();
