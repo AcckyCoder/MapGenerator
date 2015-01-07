@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,15 +14,23 @@ namespace MapGeneratorUtilite
     {
         static string[] textures = new[]
             {
-                "\"City.png\"","\"trees.jpg\"", "\"coal.jpg\"","\"gas.jpg\"" ,"\"wheat.jpg\"", "\"rocks.jpg\"", "\"grass.jpg\"" 
+                "\"trees.jpg\"", "\"coal.jpg\"","\"gas.jpg\"" ,"\"wheat.jpg\"", "\"rocks.jpg\"", "\"grass.jpg\"", "\"City.png\""
             };
 
-        enum Textures {
-           City, Tree, Coal, Gas, Wheat, Rock, Grass };
+        enum Type
+        {
+            recource, city, production, road
+        };
+
+        enum RecourceType
+        {
+            tree, coal, gas, wheat, rock, grass, city
+        };
 
         static int fieldSizeX = 30, fieldSizeY = 15;
         static int cities = 10, tree = 70, coal = 40, gas = 30, wheat = 100, rock = 60, grass = 140;
         static List<List<Cell>> cells;
+        static List<string> citiesNames = new List<string>();
 
 
         static void Main(string[] args)
@@ -30,10 +39,12 @@ namespace MapGeneratorUtilite
             Console.WriteLine("© AcckyCoder, 2014");
             Console.WriteLine();
 
-            cities = tree = coal = gas = wheat = rock = grass = 0;
+            //cities = tree = coal = gas = wheat = rock = grass = 0;
 
             do
             {
+                citiesNames = new List<string> { "Винница", "Днепропетровск", "Донецк", "Житомир", "Запорожье", "Ивано-Франковск", "Киев", "Кировоград", "Луганск", "Луцк", "Львов", "Николаев", "Одесса", "Полтава", "Ровно", "Сумы", "Тернополь", "Ужгород", "Харьков", "Херсон", "Хмельницкий", "Черкассы", "Чернигов", "Черновцы" };
+
                 do
                 {
 
@@ -65,8 +76,8 @@ namespace MapGeneratorUtilite
 
                 Console.WriteLine();
                 Console.WriteLine("There is statistic about your map.");
-                Console.WriteLine("Field size = " + fieldSizeX*fieldSizeY + " fields");
-                Console.WriteLine("Field dimension = " + fieldSizeX + "X" + fieldSizeY );
+                Console.WriteLine("Field size = " + fieldSizeX * fieldSizeY + " fields");
+                Console.WriteLine("Field dimension = " + fieldSizeX + "X" + fieldSizeY);
                 Console.WriteLine(string.Format("Cities = {0}\nTrees = {1}\nCoals = {2}\nGas = {3}\nWheat = {4}\nRocks = {5}\nGrass = {6}", cities, tree, coal, gas, wheat, rock, grass));
 
                 Console.WriteLine();
@@ -105,31 +116,62 @@ namespace MapGeneratorUtilite
                 {
                     sw.WriteLine("var map = [");
 
-                    List<List<string>> strings = new List<List<string>>();
+                    //List<List<string>> strings = new List<List<string>>();
 
-                    for (int i = 0; i < fieldSizeX; i++)
+                    //for (int i = 0; i < fieldSizeX; i++)
+                    //{
+                    //    strings.Add(new List<string>());
+                    //    for (int j = 0; j < fieldSizeY; j++)
+                    //    {
+                    //        StringBuilder sb = new StringBuilder();
+                    //        sb.Append("{\n\t\"type\": " + cells[i][j].type + ",");
+                    //        sb.Append("\n\t\"texture\": " + cells[i][j].texture + ",");
+                    //        sb.Append("\n\t\"res_cnt\": " + cells[i][j].res_cnt + ",");
+                    //        sb.Append("\n\t\"recovery\": " + cells[i][j].recovery + ",");
+                    //        sb.Append("\n\t\"owner\": " + cells[i][j].owner + ",");
+                    //        sb.Append("\n\t\"production\": " + cells[i][j].production + ",");
+                    //        sb.Append("\n\t\"level\": " + cells[i][j].level + ",");
+                    //        sb.Append("\n\t\"cityname\": " + cells[i][j].CityName + "\n}");
+
+
+                    //        strings[i].Add(sb.ToString());
+                    //    }
+                    //    if (i != fieldSizeX - 1)
+                    //        strings[i][fieldSizeY - 1] = strings[i].Last() + ",\n";
+                    //}
+
+
+
+                    //StringBuilder sb2 = new StringBuilder();
+                    //foreach (List<string> s in strings)
+                    //{
+                    //    sb2.Append(string.Join(",\n", s));
+                    //}
+
+
+                    List<string> param = new List<string>();
+                    List<string> strings = new List<string>();
+
+                    foreach (List<Cell> list in cells)
                     {
-                        strings.Add(new List<string>());
-                        for (int j = 0; j < fieldSizeY; j++)
+                        for (int i = 0; i < list.Count; i++)
                         {
-                            StringBuilder sb = new StringBuilder();
-                            sb.Append("{\n\t\"type\": " + cells[i][j].type + ",");
-                            sb.Append("\n\t\"texture\": " + cells[i][j].Texture + ",");
-                            sb.Append("\n\t\"res_cnt\": " + cells[i][j].res_cnt + ",");
-                            sb.Append("\n\t\"city\": " + cells[i][j].city + "\n}");
-                            strings[i].Add(sb.ToString());
+                            Cell cell = list[i];
+                            param.Clear();
+                            foreach (FieldInfo field in cell.GetType().GetFields())
+                            {
+                                param.Add("\n\t\"" + field.Name + "\": " + field.GetValue(cell).ToString());
+                            }
+                            strings.Add("{" + string.Join(",", param) + "\n},");
                         }
-                        if(i!= fieldSizeX-1)
-                            strings[i][fieldSizeY-1] = strings[i].Last() + ",\n";
                     }
 
-                    StringBuilder sb2 = new StringBuilder();
-                    foreach (List<string> s in strings)
+                    strings[strings.Count-1] = strings.Last().Remove(strings.Last().Length - 1);
+
+                    foreach (string s in strings)
                     {
-                        sb2.Append(string.Join(",\n", s));
+                        sw.WriteLine(s);
                     }
-
-                    sw.WriteLine(sb2.ToString());
 
                     sw.WriteLine("]");
                 }
@@ -150,44 +192,103 @@ namespace MapGeneratorUtilite
 
             Random r = new Random();
 
-            GenerateTexture(cities,  r, Textures.City);
+            generateCities(cities, r);
             Console.WriteLine("Cities generated...");
-            GenerateTexture( tree, r,1);
+            GenerateRecources(tree, r, RecourceType.tree);
             Console.WriteLine("Trees generated...");
-            GenerateTexture( coal,  r,Textures.Coal);
+            GenerateRecources(coal, r, RecourceType.coal);
             Console.WriteLine("Coal generated...");
-            GenerateTexture( gas,  r, Textures.Gas);
+            GenerateRecources(gas, r, RecourceType.gas);
             Console.WriteLine("Gas generated...");
-            GenerateTexture(wheat,  r,Textures.Wheat);
+            GenerateRecources(wheat, r, RecourceType.wheat);
             Console.WriteLine("Wheat generated...");
-            GenerateTexture( rock,  r,5);
+            GenerateRecources(rock, r, RecourceType.rock);
             Console.WriteLine("Rocks generated...");
-            GenerateTexture( grass, r,6);
+            GenerateGrass(grass, r);
             Console.WriteLine("Grass generated...");
         }
 
-        private static void GenerateTexture(int count, Random r, int index)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                int k, l;
-                do
-                {
-                    k = r.Next(0, fieldSizeX);
-                    l = r.Next(0, fieldSizeY);
-                } while (cells[k][l].Texture != string.Empty);
-                cells[k][l].Texture = textures[index];
-            }
-            Thread.Sleep(count);
-        }
-
-
-        private static void GenerateTexture(int count, Random r, Textures type)
+        private static void generateCities(int count, Random r)
         {
             int fieldsCount = fieldSizeX * fieldSizeY;
             for (int i = 0; i < count; i++)
             {
-                int k,l;
+                int k, l;
+
+                int ind = 6;
+
+                do
+                {
+                    k = r.Next(0, fieldSizeX);
+                    l = r.Next(0, fieldSizeY);
+                    if (cells[k][l].texture != string.Empty)
+                        continue;
+
+                    if (k == 0 || l == 0 || k == fieldSizeX - 1 || k == fieldSizeY - 1)
+                    {
+                        continue;
+                    }
+
+                    if (k > 0 && k < fieldSizeX - 1)
+                    {
+                        if (cells[k - 1][l].type == textures[ind])
+                            continue;
+                        if (cells[k + 1][l].texture == textures[ind])
+                            continue;
+                    }
+
+                    if (l > 0 && l < fieldSizeY - 1)
+                    {
+                        if (cells[k][l - 1].texture == textures[ind])
+                            continue;
+                        if (cells[k][l + 1].texture == textures[ind])
+                            continue;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    if (l % 2 == 0)
+                    {
+                        if (k > 0 && l > 0 && l < fieldSizeY - 1)
+                        {
+                            if (cells[k - 1][l - 1].texture == textures[ind])
+                                continue;
+                            if (cells[k - 1][l + 1].texture == textures[ind])
+                                continue;
+                        }
+                    }
+                    else
+                    {
+                        if (k < fieldSizeX - 1 && l > 0 && l < fieldSizeY - 1)
+                        {
+                            if (cells[k + 1][l - 1].texture == textures[ind])
+                                continue;
+                            if (cells[k + 1][l + 1].texture == textures[ind])
+                                continue;
+                        }
+
+                    }
+
+                    break;
+                } while (true);
+                cells[k][l].texture = textures[ind].ToString();
+                cells[k][l].type = "\"" + RecourceType.city.ToString() + "\"";
+
+                cells[k][l].cityName = getCityName(r);
+                cells[k][l].level = r.Next(1, 7).ToString();
+
+            }
+        }
+
+
+        private static void GenerateRecources(int count, Random r, RecourceType type)
+        {
+            int fieldsCount = fieldSizeX * fieldSizeY;
+            for (int i = 0; i < count; i++)
+            {
+                int k, l;
 
                 int ind = (int)type;
 
@@ -195,38 +296,42 @@ namespace MapGeneratorUtilite
                 {
                     k = r.Next(0, fieldSizeX);
                     l = r.Next(0, fieldSizeY);
-                    if (cells[k][l].Texture != string.Empty)
+                    if (cells[k][l].texture != string.Empty)
                         continue;
-
-                    if (k > 0 && k < fieldSizeX - 1)
-                    {
-                        if (cells[k - 1][l].Texture == textures[ind])
-                            continue;
-                        if (cells[k + 1][l].Texture == textures[ind])
-                            continue;
-                    }
-                    if(l > 0 && l < fieldSizeY - 1)
-                    {
-                        if (cells[k][l-1].Texture == textures[ind])
-                            continue;
-                        if (cells[k][l + 1].Texture == textures[ind])
-                            continue;
-
-                    }
-                    if (k>0 && l >0 && l<fieldSizeY-1)
-                    {
-                        if (cells[k-1][l - 1].Texture == textures[ind])
-                            continue;
-                        if (cells[k-1][l + 1].Texture == textures[ind])
-                            continue;
-
-                    }
-
+                    
                     break;
                 } while (true);
-                cells[k][l].Texture = textures[ind];
+
+                cells[k][l].texture = textures[ind].ToString();
+                cells[k][l].type = "\"" + type.ToString() + "\"";
+                cells[k][l].resourceCount = r.Next(25000, 100000).ToString();
+                cells[k][l].recovery = r.Next(30, 70).ToString();
+
             }
-            Thread.Sleep(count);
+        }
+
+        private static void GenerateGrass(int count, Random r)
+        {
+            for (int i = 0; i < cells.Count; i++)
+            {
+                for (int j = 0; j < cells[i].Count; j++)
+                {
+                    if (cells[i][j].type == "0")
+                    {
+                        cells[i][j].texture = textures[5];
+                        cells[i][j].type = "\"" + RecourceType.grass.ToString() + "\""; ;
+                    }
+                }
+            }
+        }
+
+        private static string getCityName(Random r)
+        {
+            int ind = r.Next(0, citiesNames.Count);
+
+            string name = citiesNames[ind];
+            citiesNames.RemoveAt(ind);
+            return "\"" + name + "\"";
         }
 
         private static void GetCount(out int objects, string name)
@@ -248,10 +353,30 @@ namespace MapGeneratorUtilite
 
         class Cell
         {
-            readonly public string type = "0";
-            public string Texture = string.Empty;
-            readonly public string res_cnt = "0";
-            readonly public string city = "0";
+            //global
+            public string type = "0";
+            public string texture = "";
+
+            //resource
+            public string resourceCount = "0";
+            public string recovery = "0";
+            public string resourceType = "0";
+
+            //production
+            public string owner = "\"undefined\"";
+            public string production = "0";
+
+            //city
+            public string cityName = "\"undefined\"";
+            public string level = "1";
+            public string health = "50";
+            public string taxes = "10";
+            public string crime = "50";
+            public string unemployment = "50";
+            public string happy = "50";
+
+
+
         }
     }
 }
