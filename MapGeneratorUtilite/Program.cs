@@ -105,49 +105,18 @@ namespace MapGeneratorUtilite
             Console.WriteLine("Thanks for using our Map Generator");
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
-            Process.Start("map.json");
+            Process.Start(file);
         }
+
+        private static string file = "C:\\Users\\Natalya\\Projects\\M.A.N.E.D\\map_editor\\map.js";
 
         private static void SaveFile()
         {
-            using (FileStream fs = new FileStream("map.json", FileMode.Create, FileAccess.Write))
+            using (FileStream fs = new FileStream(file, FileMode.Create, FileAccess.Write))
             {
                 using (StreamWriter sw = new StreamWriter(fs))
                 {
                     sw.WriteLine("var map = [");
-
-                    //List<List<string>> strings = new List<List<string>>();
-
-                    //for (int i = 0; i < fieldSizeX; i++)
-                    //{
-                    //    strings.Add(new List<string>());
-                    //    for (int j = 0; j < fieldSizeY; j++)
-                    //    {
-                    //        StringBuilder sb = new StringBuilder();
-                    //        sb.Append("{\n\t\"type\": " + cells[i][j].type + ",");
-                    //        sb.Append("\n\t\"texture\": " + cells[i][j].texture + ",");
-                    //        sb.Append("\n\t\"res_cnt\": " + cells[i][j].res_cnt + ",");
-                    //        sb.Append("\n\t\"recovery\": " + cells[i][j].recovery + ",");
-                    //        sb.Append("\n\t\"owner\": " + cells[i][j].owner + ",");
-                    //        sb.Append("\n\t\"production\": " + cells[i][j].production + ",");
-                    //        sb.Append("\n\t\"level\": " + cells[i][j].level + ",");
-                    //        sb.Append("\n\t\"cityname\": " + cells[i][j].CityName + "\n}");
-
-
-                    //        strings[i].Add(sb.ToString());
-                    //    }
-                    //    if (i != fieldSizeX - 1)
-                    //        strings[i][fieldSizeY - 1] = strings[i].Last() + ",\n";
-                    //}
-
-
-
-                    //StringBuilder sb2 = new StringBuilder();
-                    //foreach (List<string> s in strings)
-                    //{
-                    //    sb2.Append(string.Join(",\n", s));
-                    //}
-
 
                     List<string> param = new List<string>();
                     List<string> strings = new List<string>();
@@ -273,12 +242,12 @@ namespace MapGeneratorUtilite
 
                     break;
                 } while (true);
-                cells[k][l].texture = textures[ind].ToString();
-                cells[k][l].type = "\"" + RecourceType.city.ToString() + "\"";
 
-                cells[k][l].cityName = getCityName(r);
-                cells[k][l].level = r.Next(1, 7).ToString();
-
+                City c = new City();
+                c.texture = textures[ind].ToString();
+                c.type = "\"" + RecourceType.city.ToString() + "\"";
+                c.cityName = getCityName(r);
+                cells[k][l] = c;
             }
         }
 
@@ -302,11 +271,13 @@ namespace MapGeneratorUtilite
                     break;
                 } while (true);
 
-                cells[k][l].texture = textures[ind].ToString();
-                cells[k][l].type = "\"" + type.ToString() + "\"";
-                cells[k][l].resourceCount = r.Next(25000, 100000).ToString();
-                cells[k][l].recovery = r.Next(30, 70).ToString();
+                Resource res = new Resource();
+                res.texture = textures[ind].ToString();
+                res.type = "\"" + type.ToString() + "\"";
+                res.resourceCount = r.Next(25000, 100000).ToString();
+                res.recovery = r.Next(30, 70).ToString();
 
+                cells[k][l] = res;
             }
         }
 
@@ -318,8 +289,10 @@ namespace MapGeneratorUtilite
                 {
                     if (cells[i][j].type == "0")
                     {
-                        cells[i][j].texture = textures[5];
-                        cells[i][j].type = "\"" + RecourceType.grass.ToString() + "\""; ;
+                        Resource res = new Resource();
+                        res.texture = textures[5];
+                        res.type = "\"" + RecourceType.grass.ToString() + "\"";
+                        cells[i][j] = res;
                     }
                 }
             }
@@ -357,26 +330,35 @@ namespace MapGeneratorUtilite
             public string type = "0";
             public string texture = "";
 
-            //resource
+        }
+
+        class Resource: Cell
+        {
             public string resourceCount = "0";
             public string recovery = "0";
             public string resourceType = "0";
+            public string mining = "0";
+        }
 
-            //production
-            public string owner = "\"undefined\"";
-            public string production = "0";
-
-            //city
+        class City : Cell
+        {
             public string cityName = "\"undefined\"";
             public string level = "1";
             public string health = "50";
-            public string taxes = "10";
+            public string taxes = "12";
             public string crime = "50";
             public string unemployment = "50";
             public string happy = "50";
+            public string popularity = "2000";
+            public string salary = "100";
+            public string owner = "\"undefined\"";
+        }
 
-
-
+        class Production :Cell
+        {
+            public string owner = "\"undefined\"";
+            public string production = "0";
+            public string mining = "0";
         }
     }
 }
