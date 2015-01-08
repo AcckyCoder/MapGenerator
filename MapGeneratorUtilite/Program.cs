@@ -352,6 +352,11 @@ namespace MapGeneratorUtilite
             public string popularity = "2000";
             public string salary = "100";
             public string owner = "\"undefined\"";
+            public string treeNeeds = "100";
+            public string wheatNeeds = "100";
+            public string coalNeeds = "100";
+            public string gasNeeds = "100";
+            public string rockNeeds = "100";
         }
 
         class Production :Cell
